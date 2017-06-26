@@ -23,6 +23,7 @@
 #include<algorithm>
 #include<fstream>
 #include<chrono>
+#include<thread>
 
 #include<ros/ros.h>
 #include <cv_bridge/cv_bridge.h>
@@ -62,13 +63,12 @@ int main(int argc, char **argv)
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
     ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::STEREO,true);
-
     ImageGrabber igb(&SLAM);
-
     stringstream ss(argv[3]);
 	ss >> boolalpha >> igb.do_rectify;
 
-    if(igb.do_rectify)
+
+    if(igb.do_rectify)  //图像矫正；
     {      
         // Load settings related to stereo calibration
         cv::FileStorage fsSettings(argv[2], cv::FileStorage::READ);
@@ -114,9 +114,7 @@ int main(int argc, char **argv)
     typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> sync_pol;
     message_filters::Synchronizer<sync_pol> sync(sync_pol(10), left_sub,right_sub);
     sync.registerCallback(boost::bind(&ImageGrabber::GrabStereo,&igb,_1,_2));
-
     ros::spin();
-
     // Stop all threads
     SLAM.Shutdown();
 

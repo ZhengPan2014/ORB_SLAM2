@@ -97,6 +97,16 @@ void Viewer::Run()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         mpMapDrawer->GetCurrentOpenGLCameraMatrix(Twc);
+        // ZhengPan debug, output the camera pose
+           /*{
+               cout<<"- - - - - - - - - - - - - - - - - - -相机位姿矩阵 - - - - - - - -- - - - - - - - - - - - - - - - - -"<<endl;
+               for(int i=0; i<4; i++)
+               {
+                   for(int j=0; j<4; j++)
+                                  cout<<Twc.m[i+4*j]<<"  ";
+                   cout<<endl;
+               }
+           }*/
 
         if(menuFollowCamera && bFollow)
         {

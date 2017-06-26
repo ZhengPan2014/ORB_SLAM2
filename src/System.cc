@@ -71,10 +71,10 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
     }
     cout << "Vocabulary loaded!" << endl << endl;
 
-    //Create KeyFrame Database
+    //Create KeyFrame Database//关键帧数据库存储空间创建，并关联访问指针；
     mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
 
-    //Create the Map
+    //Create the Map//地图数据存储空间创建，并关联访问指针；
     mpMap = new Map();
 
     //Create Drawers. These are used by the Viewer
@@ -102,7 +102,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
         mpTracker->SetViewer(mpViewer);
     }
 
-    //Set pointers between threads
+    //Set pointers between three main threads
     mpTracker->SetLocalMapper(mpLocalMapper);
     mpTracker->SetLoopClosing(mpLoopCloser);
 
@@ -124,7 +124,7 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
     // Check mode change
     {
         unique_lock<mutex> lock(mMutexMode);
-        if(mbActivateLocalizationMode)
+        if(mbActivateLocalizationMode)   //定位模式；
         {
             mpLocalMapper->RequestStop();
 
@@ -137,7 +137,7 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
             mpTracker->InformOnlyTracking(true);
             mbActivateLocalizationMode = false;
         }
-        if(mbDeactivateLocalizationMode)
+        if(mbDeactivateLocalizationMode) //非定位模式，及跟踪模式；
         {
             mpTracker->InformOnlyTracking(false);
             mpLocalMapper->Release();
@@ -154,8 +154,24 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
         mbReset = false;
     }
     }
-
+    //正式进入主程序处理传入的图像，进入Tracking类；
     cv::Mat Tcw = mpTracker->GrabImageStereo(imLeft,imRight,timestamp);
+
+    //ZhengPan debug, output camera pose;
+    /*if(!Tcw.empty())
+    {
+        cout<<"- - - - - - - - - - - - - - - - - - -相机位姿矩阵 - - - - - - - -- - - - - - - - - - - - - - - - - -"<<endl;
+        for(int i=0; i<Tcw.rows; i++)
+        {
+            for(int j=0; j<Tcw.cols; j++)
+                           cout<<Tcw.at<double>(i,j)<<"  ";
+            cout<<endl;
+        }
+    }
+    else
+    {
+        cout<<"- - - - - - - - - - - - - - - - - - -跟踪丢失！ - - - - - - - -- - - - - - - - - - - - - - - - - -"<<endl;
+    }*/
 
     unique_lock<mutex> lock2(mMutexState);
     mTrackingState = mpTracker->mState;

@@ -22,6 +22,7 @@
 #include "Converter.h"
 #include "ORBmatcher.h"
 #include <thread>
+#include<iostream>
 
 namespace ORB_SLAM2
 {
@@ -85,9 +86,9 @@ Frame::Frame(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timeSt
     if(mvKeys.empty())
         return;
 
-    UndistortKeyPoints();
+    UndistortKeyPoints();  //畸变矫正；
 
-    ComputeStereoMatches();
+    ComputeStereoMatches();  //双目特征匹配；
 
     mvpMapPoints = vector<MapPoint*>(N,static_cast<MapPoint*>(NULL));    
     mvbOutlier = vector<bool>(N,false);
@@ -246,9 +247,9 @@ void Frame::AssignFeaturesToGrid()
 
 void Frame::ExtractORB(int flag, const cv::Mat &im)
 {
-    if(flag==0)
-        (*mpORBextractorLeft)(im,cv::Mat(),mvKeys,mDescriptors);
-    else
+    if(flag==0) //左图像特征点提取；
+        (*mpORBextractorLeft)(im,cv::Mat(),mvKeys,mDescriptors);//重载（）操作；
+    else            //右图像特征点提取；
         (*mpORBextractorRight)(im,cv::Mat(),mvKeysRight,mDescriptorsRight);
 }
 

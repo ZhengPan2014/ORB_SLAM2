@@ -31,6 +31,8 @@
 #include<mutex>
 #include<thread>
 
+#include<stdlib.h>
+
 
 namespace ORB_SLAM2
 {
@@ -72,6 +74,8 @@ void LoopClosing::Run()
                {
                    // Perform loop fusion and pose graph optimization
                    CorrectLoop();
+                   //ZhengPan debug, output loop closing warming.
+                   system("play /home/n1/sourceInstall/ORB_SLAM2/warmingtone/loop_detected.wav");
                }
             }
         }       
@@ -102,7 +106,7 @@ bool LoopClosing::CheckNewKeyFrames()
 
 bool LoopClosing::DetectLoop()
 {
-    {
+    {//取出待处理的关键帧；
         unique_lock<mutex> lock(mMutexLoopQueue);
         mpCurrentKF = mlpLoopKeyFrameQueue.front();
         mlpLoopKeyFrameQueue.pop_front();
@@ -111,7 +115,7 @@ bool LoopClosing::DetectLoop()
     }
 
     //If the map contains less than 10 KF or less than 10 KF have passed from last loop detection
-    if(mpCurrentKF->mnId<mLastLoopKFid+10)
+    if(mpCurrentKF->mnId<mLastLoopKFid+10) //限制回环检测的频率；
     {
         mpKeyFrameDB->add(mpCurrentKF);
         mpCurrentKF->SetErase();
@@ -121,10 +125,10 @@ bool LoopClosing::DetectLoop()
     // Compute reference BoW similarity score
     // This is the lowest score to a connected keyframe in the covisibility graph
     // We will impose loop candidates to have a higher similarity than this
-    const vector<KeyFrame*> vpConnectedKeyFrames = mpCurrentKF->GetVectorCovisibleKeyFrames();
+    const vector<KeyFrame*> vpConnectedKeyFrames = mpCurrentKF->GetVectorCovisibleKeyFrames();  //获取当前帧的关联帧；
     const DBoW2::BowVector &CurrentBowVec = mpCurrentKF->mBowVec;
     float minScore = 1;
-    for(size_t i=0; i<vpConnectedKeyFrames.size(); i++)
+    for(size_t i=0; i<vpConnectedKeyFrames.size(); i++)  //计算当前帧词典与关联帧词典相似度，选出最低得分；
     {
         KeyFrame* pKF = vpConnectedKeyFrames[i];
         if(pKF->isBad())
@@ -138,10 +142,10 @@ bool LoopClosing::DetectLoop()
     }
 
     // Query the database imposing the minimum score
-    vector<KeyFrame*> vpCandidateKFs = mpKeyFrameDB->DetectLoopCandidates(mpCurrentKF, minScore);
+    vector<KeyFrame*> vpCandidateKFs = mpKeyFrameDB->DetectLoopCandidates(mpCurrentKF, minScore);  //选择最低得分帧；
 
     // If there are no loop candidates, just add new keyframe and return false
-    if(vpCandidateKFs.empty())
+    if(vpCandidateKFs.empty())  //未找到相似帧，添加为关键帧；
     {
         mpKeyFrameDB->add(mpCurrentKF);
         mvConsistentGroups.clear();

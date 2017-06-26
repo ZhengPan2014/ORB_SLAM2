@@ -1145,7 +1145,7 @@ void TemplatedVocabulary<TDescriptor,F>::transform(
   if(m_weighting == TF || m_weighting == TF_IDF)
   {
     unsigned int i_feature = 0;
-    for(fit = features.begin(); fit < features.end(); ++fit, ++i_feature)
+    for(fit = features.begin(); fit < features.end(); ++fit, ++i_feature)   //为每一个特征匹配视觉单词；
     {
       WordId id;
       NodeId nid;
@@ -1235,7 +1235,7 @@ void TemplatedVocabulary<TDescriptor,F>::transform(const TDescriptor &feature,
     nodes = m_nodes[final_id].children;
     final_id = nodes[0];
  
-    double best_d = F::distance(feature, m_nodes[final_id].descriptor);
+    double best_d = F::distance(feature, m_nodes[final_id].descriptor); //初始化最佳匹配距离；
 
     for(nit = nodes.begin() + 1; nit != nodes.end(); ++nit)
     {
@@ -1248,7 +1248,7 @@ void TemplatedVocabulary<TDescriptor,F>::transform(const TDescriptor &feature,
       }
     }
     
-    if(nid != NULL && current_level == nid_level)
+    if(nid != NULL && current_level == nid_level)  //控制匹配搜索深度；
       *nid = final_id;
     
   } while( !m_nodes[final_id].isLeaf() );

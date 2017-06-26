@@ -223,6 +223,20 @@ void MapDrawer::SetCurrentCameraPose(const cv::Mat &Tcw)
 {
     unique_lock<mutex> lock(mMutexCamera);
     mCameraPose = Tcw.clone();
+    /*if(!Tcw.empty())
+       {
+           cout<<"- - - - - - - - - - - - - - - - - - -相机位姿矩阵 - - - - - - - -- - - - - - - - - - - - - - - - - -"<<endl;
+           for(int i=0; i<Tcw.rows; i++)
+           {
+               for(int j=0; j<Tcw.cols; j++)
+                              cout<<Tcw.at<float>(i,j)<<"  ";
+               cout<<endl;
+           }
+       }
+       else
+       {
+           cout<<"- - - - - - - - - - - - - - - - - - -跟踪丢失！ - - - - - - - -- - - - - - - - - - - - - - - - - -"<<endl;
+       }*/
 }
 
 void MapDrawer::GetCurrentOpenGLCameraMatrix(pangolin::OpenGlMatrix &M)

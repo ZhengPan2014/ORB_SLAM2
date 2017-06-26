@@ -168,7 +168,7 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRe
 {
     mImGray = imRectLeft;
     cv::Mat imGrayRight = imRectRight;
-
+    // 传入图像格式调整为灰度图；
     if(mImGray.channels()==3)
     {
         if(mbRGB)
@@ -195,9 +195,9 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRe
             cvtColor(imGrayRight,imGrayRight,CV_BGRA2GRAY);
         }
     }
-
+    // 创建当前帧；
     mCurrentFrame = Frame(mImGray,imGrayRight,timestamp,mpORBextractorLeft,mpORBextractorRight,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
-
+    //开始跟踪；
     Track();
 
     return mCurrentFrame.mTcw.clone();
@@ -275,20 +275,20 @@ void Tracking::Track()
 
     // Get Map Mutex -> Map cannot be changed
     unique_lock<mutex> lock(mpMap->mMutexMapUpdate);
-
+    //初始化；
     if(mState==NOT_INITIALIZED)
     {
         if(mSensor==System::STEREO || mSensor==System::RGBD)
-            StereoInitialization();
+            StereoInitialization();  // mState=OK if initialize success;
         else
             MonocularInitialization();
 
         mpFrameDrawer->Update(this);
 
-        if(mState!=OK)
+        if(mState!=OK)  // 重复采集数据直到采集到满足初始化的帧为止；
             return;
     }
-    else
+    else    //初始化完成后的正式追踪；
     {
         // System is initialized. Track Frame.
         bool bOK;
@@ -317,7 +317,11 @@ void Tracking::Track()
             }
             else
             {
+                system("play /home/n1/sourceInstall/ORB_SLAM2/warmingtone/i_am_lost.wav");
                 bOK = Relocalization();
+                // ZhengPan debug, relocation success warming.
+               if(bOK)
+                   system("play /home/n1/sourceInstall/ORB_SLAM2/warmingtone/relocated.wav");
             }
         }
         else
@@ -1049,6 +1053,7 @@ bool Tracking::NeedNewKeyFrame()
             {
                 if(mpLocalMapper->KeyframesInQueue()<3)
                     return true;
+
                 else
                     return false;
             }
@@ -1138,6 +1143,8 @@ void Tracking::CreateNewKeyFrame()
 
     mnLastKeyFrameId = mCurrentFrame.mnId;
     mpLastKeyFrame = pKF;
+    //ZhengPan debug, output keyFrame insert warming;
+    //system("play /home/n1/sourceInstall/ORB_SLAM2/warmingtone/key_frame_insert.wav");
 }
 
 void Tracking::SearchLocalPoints()
@@ -1367,7 +1374,7 @@ bool Tracking::Relocalization()
 
     int nCandidates=0;
 
-    for(int i=0; i<nKFs; i++)
+    for(int i=0; i<nKFs; i++)  //比较候选关键帧之间的视觉词典；
     {
         KeyFrame* pKF = vpCandidateKFs[i];
         if(pKF->isBad())
@@ -1381,7 +1388,7 @@ bool Tracking::Relocalization()
                 continue;
             }
             else
-            {
+            {   // 相同关键词个数大于15以上的进行三维求解；
                 PnPsolver* pSolver = new PnPsolver(mCurrentFrame,vvpMapPointMatches[i]);
                 pSolver->SetRansacParameters(0.99,10,300,4,0.5,5.991);
                 vpPnPsolvers[i] = pSolver;

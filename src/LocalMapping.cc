@@ -74,7 +74,7 @@ void LocalMapping::Run()
 
             mbAbortBA = false;
 
-            if(!CheckNewKeyFrames() && !stopRequested())
+            if(!CheckNewKeyFrames() && !stopRequested())  //无关键帧待处理时，进行局部优化；
             {
                 // Local BA
                 if(mpMap->KeyFramesInMap()>2)
@@ -99,7 +99,7 @@ void LocalMapping::Run()
 
         ResetIfRequested();
 
-        // Tracking will see that Local Mapping is busy
+        // Tracking will see that Local Mapping is free
         SetAcceptKeyFrames(true);
 
         if(CheckFinish())
